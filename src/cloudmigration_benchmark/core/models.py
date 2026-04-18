@@ -41,6 +41,7 @@ class ResponseFormat(Enum):
 @dataclass
 class TestCase:
     """测试用例"""
+    __test__ = False  # Tell pytest not to collect this as a test class
     id: str
     scenario_id: str
     dimension: str
