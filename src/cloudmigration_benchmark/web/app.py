@@ -337,6 +337,7 @@ def parse_xlsx_file(file_obj, progress=gr.Progress()) -> tuple:
 
 def run_evaluation(
     dimensions: List[str],
+    industry_depths: List[str],
     max_samples: int,
     progress=gr.Progress()
 ) -> tuple:
@@ -364,6 +365,8 @@ def run_evaluation(
         test_cases = [
             tc for tc in state.test_suite.test_cases
             if tc.dimension in dimensions
+            and (not industry_depths or tc.dimension != "industry_depth"
+                 or any(tag in industry_depths for tag in tc.tags))
         ][:max_samples]
 
         if not test_cases:
@@ -596,15 +599,15 @@ def create_app():
                         # 维度选择
                         dimension_selector = gr.CheckboxGroup(
                             label="选择评测维度",
-                            choices=list(DIMENSION_OPTIONS.values()),
-                            value=list(DIMENSION_OPTIONS.values())[:3],
+                            choices=list(DIMENSION_OPTIONS.keys()),
+                            value=list(DIMENSION_OPTIONS.keys())[:3],
                         )
 
                         # 行业纵深选择
                         industry_depth_selector = gr.CheckboxGroup(
                             label="行业纵深评测",
-                            choices=list(INDUSTRY_DEPTH_OPTIONS.values()),
-                            value=list(INDUSTRY_DEPTH_OPTIONS.values())[:3],
+                            choices=list(INDUSTRY_DEPTH_OPTIONS.keys()),
+                            value=list(INDUSTRY_DEPTH_OPTIONS.keys())[:3],
                         )
 
                         max_samples = gr.Slider(
@@ -650,7 +653,7 @@ def create_app():
                 # 运行评测按钮事件
                 run_btn.click(
                     fn=run_evaluation,
-                    inputs=[dimension_selector, max_samples],
+                    inputs=[dimension_selector, industry_depth_selector, max_samples],
                     outputs=[eval_summary, results_table, score_chart, pass_rate_chart, confidence_chart, radar_chart, dimension_summary_table]
                 )
 
